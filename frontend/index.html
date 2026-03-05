@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Music Trainer MVP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div id="score">Очки: 0</div>
+            <div id="timer">Время: 60</div>
+        </div>
+        
+        <!-- Теперь тут будет SVG с нотным станом -->
+        <div id="target-note">Нажми Старт</div>
+
+        <div id="piano" class="piano-container"></div>
+
+        <button id="start-btn">Старт</button>
+    </div>
+
+    <!-- Подключаем VexFlow для отрисовки нот -->
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
