@@ -147,13 +147,65 @@ function handleKeyPress(clickedNote, btnElement) {
     }
 }
 
-// 7. Конец игры
-function endGame() {
+// ... (весь код до функции endGame остается без изменений)
+
+// 7. Конец игры (Связь с Golang Backend)
+async function endGame() {
     isPlaying = false;
     clearInterval(gameInterval);
     targetNoteEl.innerHTML = "<div style='font-size:30px; margin-top:50px'>Время вышло!</div>";
     startBtn.style.display = "inline-block";
     startBtn.innerText = "Играть снова";
+
+    // 1. Спрашиваем имя игрока (если нажмет Отмена, вернется null)
+    const username = prompt(`Игра окончена!\nТвой счет: ${score} очков.\nВведите имя для сохранения результата:`, "Игрок");
+
+    if (username !== null) {
+        try {
+            // 2. Отправляем POST-запрос на наш Go-сервер
+            await fetch('http://localhost:8080/api/scores', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    username: username, 
+                    score: score 
+                })
+            });
+
+            // 3. Запрашиваем и показываем обновленный топ игроков
+            await loadLeaderboard();
+            
+        } catch (error) {
+            console.error("Ошибка при отправке на сервер:", error);
+            alert("Не удалось подключиться к серверу :(");
+        }
+    }
+}
+
+// 8. Загрузка и отрисовка Таблицы Лидеров
+async function loadLeaderboard() {
+    try {
+        const response = await fetch('http://localhost:8080/api/leaderboard');
+        const topScores = await response.json();
+
+        // Генерируем простенький HTML для вывода топа
+        let html = "<h3>🏆 Таблица лидеров</h3><ol style='text-align:left; display:inline-block;'>";
+        
+        topScores.forEach(entry => {
+            html += `<li style="margin-bottom: 5px;">
+                        <b>${entry.username}</b>: ${entry.score} очков
+                     </li>`;
+        });
+        html += "</ol>";
+
+        // Выводим таблицу лидеров прямо в зоне, где раньше были ноты
+        targetNoteEl.innerHTML = html;
+
+    } catch (error) {
+        console.error("Ошибка при получении таблицы лидеров:", error);
+    }
 }
 
 initPiano();
