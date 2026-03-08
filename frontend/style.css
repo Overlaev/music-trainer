@@ -1,13 +1,131 @@
-body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f4; }
-.game-container { max-width: 600px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; }
-.header { display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; margin-bottom: 20px; }
-#target-note { font-size: 60px; font-weight: bold; margin: 30px 0; }
-.piano-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 20px; }
+/* --- ОБЩИЕ СТИЛИ --- */
+body { 
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    text-align: center; 
+    background: #e9ecef; 
+    margin: 0;
+    padding: 0;
+}
 
-/* Стили для клавиш */
-.key { width: 40px; height: 60px; font-size: 14px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
-.key.black { background: #333; color: white; }
+.game-container { 
+    max-width: 800px; /* Сделали пошире, чтобы влезли 2 октавы пианино */
+    margin: 40px auto; 
+    background: white; 
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
 
-/* Цвета обратной связи */
-.key.correct { background: #4caf50 !important; color: white; }
-.key.wrong { background: #f44336 !important; color: white; }
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 22px; 
+    font-weight: bold; 
+    margin-bottom: 20px; 
+    color: #333;
+}
+
+#score { color: #2196F3; }
+#timer { color: #FF9800; }
+
+/* Контейнер для нот (или для таблицы лидеров в конце игры) */
+#target-note { 
+    font-size: 24px; 
+    min-height: 160px; /* Чтобы интерфейс не прыгал, когда нота появляется */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    margin: 20px 0; 
+}
+
+/* Кнопка Старт */
+#start-btn {
+    padding: 12px 30px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: background 0.2s, transform 0.1s;
+}
+
+#start-btn:hover { background: #45a049; }
+#start-btn:active { transform: translateY(2px); }
+
+
+/* --- ПИАНИНО --- */
+.piano-container { 
+    display: flex; 
+    justify-content: center; 
+    margin: 30px auto; 
+    user-select: none; /* Запрещаем выделение текста при быстрых кликах */
+}
+
+.key { 
+    cursor: pointer; 
+    position: relative; 
+    box-sizing: border-box; 
+    transition: background 0.1s, transform 0.05s; 
+    display: flex;
+    align-items: flex-end; /* Текст (названия нот) будет внизу клавиши */
+    justify-content: center;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+/* Белые клавиши */
+.key.white { 
+    width: 45px; 
+    height: 200px; 
+    background: #fff; 
+    border: 1px solid #333; 
+    border-radius: 0 0 5px 5px; 
+    z-index: 1; /* Под черными */
+    box-shadow: 0 4px 4px rgba(0,0,0,0.2);
+    padding-bottom: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+.key.white:active { 
+    background: #eaeaea; 
+    transform: translateY(2px); /* Эффект физического нажатия */
+}
+
+/* Черные клавиши */
+.key.black { 
+    width: 28px; 
+    height: 120px; 
+    background: #111; 
+    border-radius: 0 0 4px 4px; 
+    z-index: 2; /* Над белыми */
+    
+    /* МАГИЯ CSS: Черные клавиши наезжают на стыки белых */
+    margin-left: -14px; 
+    margin-right: -14px; 
+    
+    box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+    padding-bottom: 10px;
+    font-size: 11px;
+    color: #ccc;
+}
+
+.key.black:active { 
+    background: #333; 
+    transform: translateY(2px);
+}
+
+/* Подсветка при правильном и неправильном клике */
+.key.correct { background: #4caf50 !important; color: white !important; }
+.key.wrong { background: #f44336 !important; color: white !important; }
+
+/* Стили для таблицы лидеров */
+ol {
+    background: #f8f9fa;
+    padding: 20px 40px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}

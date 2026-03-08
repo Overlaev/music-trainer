@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Music Trainer MVP</title>
+    <title>Music Trainer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,17 +12,21 @@
             <div id="timer">Время: 60</div>
         </div>
         
-        <!-- Теперь тут будет SVG с нотным станом -->
+        <!-- Контейнер для SVG с нотным станом / Таблицы лидеров -->
         <div id="target-note">Нажми Старт</div>
 
+        <!-- Контейнер для кнопок-клавиш -->
         <div id="piano" class="piano-container"></div>
 
         <button id="start-btn">Старт</button>
     </div>
 
-    <!-- Подключаем VexFlow для отрисовки нот -->
+    <!-- Библиотека для отрисовки нот -->
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    <!-- Библиотека для звука -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <!-- Наша логика -->
     <script src="app.js"></script>
 </body>
 </html>

@@ -22,7 +22,7 @@ const targetNoteEl = document.getElementById("target-note");
 const pianoEl = document.getElementById("piano");
 const startBtn = document.getElementById("start-btn");
 
-// ИНИЦИАЛИЗАЦИЯ ЗВУКА (Загружаем сэмплы настоящего пианино)
+// ИНИЦИАЛИЗАЦИЯ ЗВУКА
 const pianoSampler = new Tone.Sampler({
     urls: {
         "C4": "C4.mp3",
@@ -31,21 +31,25 @@ const pianoSampler = new Tone.Sampler({
         "A4": "A4.mp3",
     },
     release: 1,
-    // Берем звуки с официального хранилища Tone.js
     baseUrl: "https://tonejs.github.io/audio/salamander/",
 }).toDestination();
 
-
-// 2. Инициализация пианино
+// 2. Инициализация пианино (ИСПРАВЛЕННАЯ: теперь задаем класс .white)
 function initPiano() {
     pianoEl.innerHTML = "";
     NOTES.forEach(note => {
-        const btn = document.createElement("button");
+        const btn = document.createElement("div"); // Используем div
         btn.className = "key";
-        if (note.includes("#")) btn.classList.add("black");
         
-        btn.innerText = note; 
-        // Привязываем клик
+        // Разделяем на черные и белые клавиши
+        if (note.includes("#")) {
+            btn.classList.add("black");
+            btn.innerText = note.replace("#", "♯"); 
+        } else {
+            btn.classList.add("white");
+            btn.innerText = note; 
+        }
+        
         btn.onclick = () => handleKeyPress(note, btn);
         pianoEl.appendChild(btn);
     });
@@ -68,7 +72,7 @@ function drawNoteOnStaff(noteString) {
     const octave = noteString.charAt(noteString.length - 1);
     const vexKey = `${letter}${accidental}/${octave}`;
 
-    const staveNote = new VF.StaveNote({ clef: "treble", keys: [vexKey], duration: "w" });
+    const staveNote = new VF.StaveNote({ clef: "treble", keys:[vexKey], duration: "w" });
     
     if (accidental) {
         staveNote.addModifier(new VF.Accidental(accidental));
@@ -80,9 +84,8 @@ function drawNoteOnStaff(noteString) {
     voice.draw(context, stave);
 }
 
-// 4. Старт игры (СДЕЛАЛИ АСИНХРОННЫМ ДЛЯ ЗВУКА)
+// 4. Старт игры
 startBtn.onclick = async () => {
-    // Обязательная строка! Разрешаем браузеру проигрывать звук после клика
     await Tone.start();
     
     score = 0;
@@ -116,12 +119,10 @@ function nextNote() {
 function handleKeyPress(clickedNote, btnElement) {
     if (!isPlaying) return;
 
-    // ПРОИГРЫВАЕМ ЗВУК ПИАНИНО (Длительность 8-я нота)
-    // Tone.js сам понимает формат "C#4" и воспроизводит нужную высоту!
     pianoSampler.triggerAttackRelease(clickedNote, "8n");
 
     if (clickedNote === currentNote) {
-        // ПРАВИЛЬНО
+        // Правильно
         const timeTaken = Date.now() - noteAppearedAt;
         let earnedPoints = Math.max(100, Math.round(MAX_POINTS_PER_NOTE * (1 - timeTaken / MAX_TIME_FOR_MAX_POINTS)));
         if (timeTaken > MAX_TIME_FOR_MAX_POINTS) earnedPoints = 100;
@@ -136,7 +137,7 @@ function handleKeyPress(clickedNote, btnElement) {
         }, 200);
 
     } else {
-        // НЕПРАВИЛЬНО 
+        // Неправильно
         score = Math.max(0, score - PENALTY_POINTS); 
         scoreEl.innerText = `Очки: ${score}`;
 
@@ -147,8 +148,6 @@ function handleKeyPress(clickedNote, btnElement) {
     }
 }
 
-// ... (весь код до функции endGame остается без изменений)
-
 // 7. Конец игры (Связь с Golang Backend)
 async function endGame() {
     isPlaying = false;
@@ -157,42 +156,32 @@ async function endGame() {
     startBtn.style.display = "inline-block";
     startBtn.innerText = "Играть снова";
 
-    // 1. Спрашиваем имя игрока (если нажмет Отмена, вернется null)
     const username = prompt(`Игра окончена!\nТвой счет: ${score} очков.\nВведите имя для сохранения результата:`, "Игрок");
 
     if (username !== null) {
         try {
-            // 2. Отправляем POST-запрос на наш Go-сервер
             await fetch('http://localhost:8080/api/scores', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    username: username, 
-                    score: score 
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, score: score })
             });
 
-            // 3. Запрашиваем и показываем обновленный топ игроков
             await loadLeaderboard();
             
         } catch (error) {
             console.error("Ошибка при отправке на сервер:", error);
-            alert("Не удалось подключиться к серверу :(");
+            alert("Не удалось подключиться к серверу (убедитесь, что Go-сервер запущен)");
         }
     }
 }
 
-// 8. Загрузка и отрисовка Таблицы Лидеров
+// 8. Загрузка Таблицы Лидеров
 async function loadLeaderboard() {
     try {
         const response = await fetch('http://localhost:8080/api/leaderboard');
         const topScores = await response.json();
 
-        // Генерируем простенький HTML для вывода топа
         let html = "<h3>🏆 Таблица лидеров</h3><ol style='text-align:left; display:inline-block;'>";
-        
         topScores.forEach(entry => {
             html += `<li style="margin-bottom: 5px;">
                         <b>${entry.username}</b>: ${entry.score} очков
@@ -200,12 +189,12 @@ async function loadLeaderboard() {
         });
         html += "</ol>";
 
-        // Выводим таблицу лидеров прямо в зоне, где раньше были ноты
         targetNoteEl.innerHTML = html;
 
     } catch (error) {
-        console.error("Ошибка при получении таблицы лидеров:", error);
+        console.error("Ошибка при получении таблицы:", error);
     }
 }
 
+// ЗАПУСК Отрисовки пианино при загрузке страницы
 initPiano();
